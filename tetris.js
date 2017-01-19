@@ -31,3 +31,83 @@ var createCanvas = function(rows, cols, cellWidth, cellHeight)
     // 绘制线条
     tetrix_ctx.stroke();
 }
+
+// 该数组用于记录底下已经固定的方块
+var tetris_status = [];
+for (var i = 0; i < TETRIS_ROWS; i++)
+{
+    tetris_status[i] = []
+    for (var j = 0; j < TETRIS_COLS; j++)
+    {
+        tetris_status[i][j] = NO_BLOCK;
+    }
+}
+
+// 定义几种可能出现的方块组合
+var blockArr = [
+    // 代表第一种可能出现的方块 Z
+    [
+        {x: TETRIS_COLS/2 - 1, y:0, color:1},
+        {x: TETRIS_COLS/2, y:0, color:1},
+        {x: TETRIS_COLS/2, y:1, color:1},
+        {x: TETRIS_COLS/2 - 1, y:1, color:1}
+    ],
+    // 代表第二种可能出现的方块 反Z
+    [
+        {x: TETRIS_COLS/2 + 1, y:0, color:2},
+        {x: TETRIS_COLS/2, y:0, color:2},
+        {x: TETRIS_COLS/2, y:1, color:2},
+        {x: TETRIS_COLS/2 - 1, y:1, color:2}
+    ],
+    // 代表第三种可能出现的方块 田
+    [
+        {x: TETRIS_COLS/2 - 1, y:0, color:3},
+        {x: TETRIS_COLS/2, y:0, color:3},
+        {x: TETRIS_COLS/2 - 1, y:1, color:3},
+        {x: TETRIS_COLS/2, y:1, color:3}
+    ],
+    // 代表第四种可能出现的方块 L
+    [
+        {x: TETRIS_COLS/2 - 1, y:0, color:4},
+        {x: TETRIS_COLS/2 - 1, y:1, color:4},
+        {x: TETRIS_COLS/2 - 1, y:1, color:4},
+        {x: TETRIS_COLS/2, y:2, color:4}
+    ],
+    // 代表第五种可能出现的方块 J
+    [
+        {x: TETRIS_COLS/2, y:0, color:5},
+        {x: TETRIS_COLS/2, y:1, color:5},
+        {x: TETRIS_COLS/2, y:2, color:5},
+        {x: TETRIS_COLS/2 - 1, y:2, color:5}
+    ],
+    // 代表第六种可能出现的方块 条
+    [
+        {x: TETRIS_COLS/2, y:0, color:6},
+        {x: TETRIS_COLS/2, y:0, color:6},
+        {x: TETRIS_COLS/2, y:1, color:6},
+        {x: TETRIS_COLS/2, y:3, color:6}
+    ],
+    // 代表第七种可能出现的方块 _|_
+    [
+        {x: TETRIS_COLS/2, y:0, color:7},
+        {x: TETRIS_COLS/2 - 1, y:1, color:7},
+        {x: TETRIS_COLS/2, y:1, color:7},
+        {x: TETRIS_COLS/2 + 1, y:1, color:7}
+    ]
+];
+
+// 定义初始化正在掉落的方块
+var initBlock = function()
+{
+    var rand = Math.floor(Math.random() * blockArr.lengh);
+    // 随机生产正在掉落的方块
+    currentFail = [
+        {x: blockArr[rand][0].x, y: blockArr[rand][0].y, color: blockArr[rand][0].color},
+        {x: blockArr[rand][1].x, y: blockArr[rand][1].y, color: blockArr[rand][1].color},
+        {x: blockArr[rand][2].x, y: blockArr[rand][2].y, color: blockArr[rand][2].color},
+        {x: blockArr[rand][3].x, y: blockArr[rand][3].y, color: blockArr[rand][3].color},
+    ];
+};
+
+
+}
