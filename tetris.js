@@ -109,5 +109,166 @@ var initBlock = function()
     ];
 };
 
+// 控制方块向下掉
+var moveDown = function()
+{
+    // 定义能否掉落的旗标
+    var canDown = true;
+    // 遍历每个方块，判断是否能向下掉落
+    for (var i = 0; i < currentFall.length; i++)
+    {
+        // 判断是否已经到最底下
+        if (currentFall[i].y >= TERRIS.ROWS - 1)
+        {
+            canDown = false;
+            break;
+        }
+        // 判断下一格是否有方块，如果有，则不能向下掉落
+        if (terris_status[currentFall[i].y + 1][currentFall[i].x] != NO_BLOCK)
+        {
+            canDown = false;
+            break;
+        }
+    }
+    // 如果能向下掉落
+    if (canDown)
+    {
+        // 将下移前的每个方块的背景色涂成白色
+        for (var i = 0; i < currentFall.length; i++)
+        {
+            var cur = currentFall[i];
+            // 设置填充颜色
+            tetris_ctx.fillStyle = 'white';
+            // 绘制矩形
+            tetris_ctx.fillRect(cur.x * CESS_SIZE + 1, cur.y * CESS_SIZE +1, CELL_SIZE - 2, CESS_SIZE -2);
+        }
+        // 遍历每个方块，控制每个方块的坐标加1，也就是控制方块都掉落一格
+        for (var i = 0; i < currentFall.length; i++)
+        {
+            var cur = currentFall[i];
+            cur.y ++;
+        }
+        // 将下移后的每个方块的背景色涂成该方块的颜色值
+        for (var i = 0; i < currentFall.length; i++)
+        {
+            var cur = currentFall[i];
+            // 设置填充颜色
+            tetris_ctx.fillStyle = color[cur.color];
+            // 绘制矩形
+            tetris_ctx.fillRect(cur.x * CESS_SIZE + 1, cur.y * CESS_SIZE + 1, CESS_SIZE - 2, CESS_SIZE - 2);
+        }
+    }
+    else //不能向下掉落
+    {
+        // 遍历每个方块，把每个方块的值记录到tetris_status数组中
+        for (var i = 0; i < currentFall.length; i++)
+        {
+            var cur = currentFall[i];
+            // 如果有方块已经到最上面，则表明输了
+            if (cur.y < 2)
+            {
+                // 清空Local Storage中的当前积分值、游戏状态、当前速度
+                localStorage.removeItem("curScore");
+                localStorage.removeItem("tetris_status");
+                localStorage.removeItem("curSpeed");
+                if (confirm("您已经输了！是否参与排名？"))
+                {
+                    // 读取Local Storage里的maxScore记录
+                    maxScore = localStorage.getItem("maxScore");
+                    maxScore = maxScore == null? 0:maxScore;
+                    // 如果当前积分大于localStorage中记录的最高积分
+                    if (curScore >= maxScore)
+                    {
+                        // 记录最高积分
+                        localStorage.setItem("maxScore", curScore);
+                    }
+                }
+                // 游戏结束
+                isPlaying = false;
+                // 清除计数器
+                clearInterval(curTimer)
+                return;
+            }
+            // 把每个方块当前所在的位置赋为当前方块的颜色
+            tetris_status[cur.y][cur.x] = cur.color;
+        }
 
+        // 判断是否有可消除的行
+        lineFull();
+        // 使用Local Storage记录俄罗斯方块的游戏状态
+        localStorage.setItem("tetris_status", JSON.stringify(tetris_status));
+        // 开始一组新的方块
+        initBlock();
+    }
+}
+
+// 判断是否有一行已满
+var lineFull = function()
+{
+    // 依次遍历每一行
+    for (var i = 0; i < TETRIS_ROWS; i++)
+    {
+        var flag = true;
+        // 遍历当前行的每一个单元格
+        for (var j = 0; i < TETRIS_COLS; j++)
+        {   
+            if (tetris_status[i][j] == NO_BLOCK)
+            {
+                flag = false;
+                break;
+            }
+        }
+        // 如果当前行已全部有方块了
+        if (flag)
+        {
+             // 将当前积分增加100
+             curScoreEle.innerHTML = curScore += 100;
+             // 记录当前积分
+             localStorage.setItem("curScore", curScore);
+             // 如果当前积分达到升级极限
+             if (curScore >= curSpeed * curSpeed * 500)
+             {
+                curSpeedEle.innerHTML = curSpeed += 1;
+                // 使用Local Storage记录curSpeed
+                localStorage.setItem("curSpeed", curSpeed);
+                clearInterval(curTimer);
+                curTimer = setInterval("moveDown();", 500/curSpeed);
+             }
+             // 把当前行的所有方块下移一行
+             for (var k = i; k > 0; k--)
+             {
+                for (var l = 0; l < TETRIS_COLS; l++)
+                {
+                    tetris_status[k][l] = tetris_status[k-1][l]
+                }
+             }
+             // 消除方块后，重新绘制一遍方块
+             drawBlock();
+        }
+    }
+}
+
+// 绘制俄罗斯方块的状态
+var drawBlock = function()
+{
+    for (var i = 0; i < TETRIS_ROWS; i++)
+    {
+        for (var j = 0; j < TETRIS_COLS; j++)
+        {
+            // 有方块的地方绘制颜色
+            if (tetris_status[i][j] != NO_BLOCK)
+            {
+                // 设置填充颜色
+                tetris_ctx.fillStyle = colors[tetris_status[i][j]];
+                // 绘制矩形
+                tetris_ctx.fillRect(j * CELL_SIZE + 1, i * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2);
+            }
+            else // 没有方块的地方绘制白色
+            {
+                // 设置填充的白色
+                tetris_ctx.fillStyle = 'white';
+                tetris_ctx.fillRect(j * CELL_SIZE + 1, i * CELL_SIZE + 1, CELL_SIZE - 2, CELL_SIZE - 2);
+            }
+        }
+    }
 }
