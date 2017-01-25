@@ -272,3 +272,164 @@ var drawBlock = function()
         }
     }
 }
+
+// 为窗口的按键事件绑定事件监听器
+window.onkeydown = function(evt)
+{
+    switch (evt.keycode)
+    {
+        // 按下了“向下”箭头
+        case 40:
+            if (!isPlaying)
+                return;
+            moveDown();
+            break;
+        // 向左箭头
+        case 37:
+            if (!isPlaying)
+                return;
+            moveLeft();
+            break;
+        // 向右箭头
+        case 39:
+            if (!isPlaying)
+                return;
+            moveRight();
+            break;
+        // 向上箭头
+        case 38:
+            if (!isPlaying)
+                return;
+            // rotate();
+            break;
+    }
+}
+
+// 定义左移方块的函数
+var moveLeft = function()
+{
+    // 定义能否左移的标记
+    var canLeft = true;
+    for (var i = 0; i < currentFall.length; i++)
+    {
+        // 如果已经到了最左边，则不能左移
+        if (currentFall[i].x <= 0)
+        {
+            canLeft = false;
+            break;
+        }
+        // 或左边的位置已有方块，则不能左移
+        if (tetris_status[currentFall[i].y][currentFall[i].x -1] != NO_BLOCK)
+        {
+            canLeft = false;
+            break;
+        }
+    }
+
+    // 如果能左移
+    if (canLeft)
+    {
+        // 将左移前的每个方块的背景涂成白色
+        for (var i = 0; i < currentFall.length; i++)
+        {
+            var cur = currentFall[i];
+            // 设置填充颜色
+            tetris_ctx.fillStyle = 'white';
+            tetris_ctx.fillRect(cur.x * CELL_SIZE +1, cur.y * CELL_SIZE +1, CELL_SIZE - 2, CELL_SIZE -2);
+            // 左移所有正在掉落的方块
+            for (var i = 0; i < currentFall.lenght; i++)
+            {
+                var cur = currentFall[i];
+                cur.x --;
+            }
+            // 将左移后的每个方块的背景涂成方块对应的颜色
+            for (var i = 0; i < currentFall.lengh; i++)
+            {
+                var cur = currentFall[i];
+                tetris_ctx.fillStyle = color[cur.color];
+                tetris_ctx.fillRect(cur.x * CELL_SIZE + 1, cur.y * CELL_SIZE + 1, CELL_SIZE -2, CELL_SIZE -2);
+            }
+        }
+    }
+}
+
+
+// 定义右移方块的函数
+var moveRight = function()
+{
+    // 定义能否右移的标记
+    var canRight= true;
+    for (var i = 0; i < currentFall.length; i++)
+    {
+        // 如果已经到了最右边，则不能右移
+        if (currentFall[i].x >= TETRIS_COLS - 1)
+        {
+            canRight = false;
+            break;
+        }
+        // 或右边的位置已有方块，则不能右移
+        if (tetris_status[currentFall[i].y][currentFall[i].x -1] != NO_BLOCK)
+        {
+            canRight = false;
+            break;
+        }
+    }
+
+    // 如果能右移
+    if (canRight)
+    {
+        // 将右移前的每个方块的背景涂成白色
+        for (var i = 0; i < currentFall.length; i++)
+        {
+            var cur = currentFall[i];
+            // 设置填充颜色
+            tetris_ctx.fillStyle = 'white';
+            tetris_ctx.fillRect(cur.x * CELL_SIZE +1, cur.y * CELL_SIZE +1, CELL_SIZE - 2, CELL_SIZE -2);
+            // 右移所有正在掉落的方块
+            for (var i = 0; i < currentFall.lenght; i++)
+            {
+                var cur = currentFall[i];
+                cur.x ++;
+            }
+            // 将右移后的每个方块的背景涂成方块对应的颜色
+            for (var i = 0; i < currentFall.lengh; i++)
+            {
+                var cur = currentFall[i];
+                tetris_ctx.fillStyle = color[cur.color];
+                tetris_ctx.fillRect(cur.x * CELL_SIZE + 1, cur.y * CELL_SIZE + 1, CELL_SIZE -2, CELL_SIZE -2);
+            }
+        }
+    }
+}
+
+// 当页面加载完成时，执行该函数里的代码
+window.onload = function()
+{
+    // 创建canvas组件
+    createCanvas(TETRIS_ROWS, TETRIS_COLS, CELL_SIZE, CELL_SIZE);
+    document.body.appendChild(tetris_canvas);
+    curScoreEle = document.getElementById("curScoreEle");
+    curSpeedEle = document.getElementById("curSpeedEle");
+    maxScoreEle = document.getElementById("maxScoreEle");
+    // 读取Local Storage里的tetris_status记录
+    var tmpStatus = localStorage.getItem("tetris_status");
+    tetris_status = tmpStatus == null ? tetris_status : JSON.parse(tmpStatus);
+    // 把方块状态绘制出来
+    drawBlock();
+    // 读取local Storage里的curScore记录
+    curScore = localStorage.getItem("curScore");
+    curScore = curScore == null ? 0 : parseInt(curScore);
+    curScoreEle.innerHTML = curScore;
+    // 读取Local Storage里maxScore记录
+    maxScore = localStorage.getItem("maxScore");
+    maxScore = maxScore == null ? 0 : parseInt(maxScore);
+    maxScoreEle.innerHTML = maxScore;
+    // 读取Local Storage里的curSpeed记录
+    curSpeed = localStorage.getItem("curSpeed");
+    curSpeed = curSpeed == null ? 1 : parseInt(curSpeed);
+    curSpeedEle.innerHTML = curSpeed;
+    // 初始化正在掉落的方块
+    initBlock();
+    // 控制每隔固定时间执行一次向下掉落
+    curTimer = setInterval("moveDown();", 500/curSpeed);
+}
